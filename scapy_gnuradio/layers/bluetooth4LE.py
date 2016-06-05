@@ -127,10 +127,10 @@ class BTLE_ADV(Packet):
     fields_desc = [
         BitEnumField("RxAdd", 0, 1, {0: "public", 1: "random"}),
         BitEnumField("TxAdd", 0, 1, {0: "public", 1: "random"}),
-        HiddenField(BitField("RFU", 0, 2)),  # Unused
+        BitField("RFU", 0, 2),  # Unused
         BitEnumField("PDU_type", 0, 4, {0: "ADV_IND", 1: "ADV_DIRECT_IND", 2: "ADV_NONCONN_IND", 3: "SCAN_REQ",
                                         4: "SCAN_RSP", 5: "CONNECT_REQ", 6: "ADV_SCAN_IND"}),
-        HiddenField(BitField("unused", 0, 2)),  # Unused
+        BitField("unused", 0, 2),  # Unused
         XBitField("Length", None, 6),
     ]
 
@@ -150,7 +150,7 @@ class BTLE_ADV(Packet):
 class BTLE_DATA(Packet):
     name = "BTLE data header"
     fields_desc = [
-        HiddenField(BitField("RFU", 0, 3)),  # Unused
+        BitField("RFU", 0, 3),  # Unused
         BitField("MD", 0, 1),
         BitField("SN", 0, 1),
         BitField("NESN", 0, 1),

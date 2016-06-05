@@ -17,7 +17,7 @@ from scapy.fields import *
 from scapy.supersocket import SuperSocket
 from scapy import sendrecv
 from scapy import main
-import scapy.layers.gnuradio
+import scapy_gnuradio.layers.gnuradio
 
 
 class GnuradioSocket(SuperSocket):

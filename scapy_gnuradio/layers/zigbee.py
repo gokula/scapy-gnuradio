@@ -7,7 +7,7 @@
 import struct
 from scapy.packet import Packet, bind_layers
 from scapy.fields import *
-from scapy.layers.dot15d4 import dot15d4AddressField, Dot15d4Beacon
+from scapy_gnuradio.layers.dot15d4 import dot15d4AddressField, Dot15d4Beacon
 
 # ZigBee Cluster Library Identifiers, Table 2.2 ZCL
 _zcl_cluster_identifier = {
@@ -750,7 +750,7 @@ class ZigbeeSecurityHeader(Packet):
     name = "Zigbee Security Header"
     fields_desc = [
         # Security control (1 octet)
-        HiddenField(FlagsField("reserved1", 0, 2, [ 'reserved1', 'reserved2' ]), True),
+        FlagsField("reserved1", 0, 2, [ 'reserved1', 'reserved2' ]),
         BitField("extended_nonce", 1, 1), # set to 1 if the sender address field is present (source)
         # Key identifier
         BitEnumField("key_type", 1, 2, {

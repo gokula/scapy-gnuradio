@@ -74,7 +74,7 @@ class dot15d4AddressField(Field):
 class Dot15d4(Packet):
     name = "802.15.4"
     fields_desc = [
-                    HiddenField(BitField("fcf_reserved_1", 0, 1), True), #fcf p1 b1
+                    BitField("fcf_reserved_1", 0, 1), #fcf p1 b1
                     BitEnumField("fcf_panidcompress", 0, 1, [False, True]),
                     BitEnumField("fcf_ackreq", 0, 1, [False, True]),
                     BitEnumField("fcf_pending", 0, 1, [False, True]),
@@ -83,7 +83,7 @@ class Dot15d4(Packet):
                     BitEnumField("fcf_srcaddrmode", 0, 2, {0:"None", 1:"Reserved", 2:"Short", 3:"Long"}),  #fcf p2 b1
                     BitField("fcf_framever", 0, 2), # 00 compatibility with 2003 version; 01 compatible with 2006 version
                     BitEnumField("fcf_destaddrmode", 2, 2, {0:"None", 1:"Reserved", 2:"Short", 3:"Long"}), #fcf p2 b2
-                    HiddenField(BitField("fcf_reserved_2", 0, 2), True),
+                    BitField("fcf_reserved_2", 0, 2),
                     Emph(ByteField("seqnum", 1)) #sequence number
                     ]
 
@@ -151,7 +151,7 @@ class Dot15d4Ack(Packet):
 class Dot15d4AuxSecurityHeader(Packet):
     name = "802.15.4 Auxiliary Security Header"
     fields_desc = [
-        HiddenField(BitField("sec_sc_reserved", 0, 3), True),
+        BitField("sec_sc_reserved", 0, 3),
         # Key Identifier Mode
         # 0: Key is determined implicitly from the originator and receipient(s) of the frame
         # 1: Key is determined explicitly from the the 1-octet Key Index subfield of the Key Identifier field
