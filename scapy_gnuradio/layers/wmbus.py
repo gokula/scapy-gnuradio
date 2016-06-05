@@ -147,7 +147,7 @@ class WMBus(Packet):
         BitField("control", 0, 4),
         BitEnumField("func", 0, 4, _function_codes),
         WMBusManufacturerField("manuf", 0),
-        XLEIntField("addr", 0),
+        LEIntField("addr", 0),
         ByteEnumField("device", 0, device_types),
         ByteField("version", 1),
         ByteEnumField("ci", 0, _control_information)

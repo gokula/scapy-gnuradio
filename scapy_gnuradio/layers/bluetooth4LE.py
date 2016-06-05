@@ -66,7 +66,7 @@ class BTLEChanMapField(XByteField):
 class BTLE(Packet):
     name = "BT4LE"
     fields_desc = [
-        XLEIntField("access_addr", 0x8E89BED6),
+        LEIntField("access_addr", 0x8E89BED6),
         X3BytesField("crc", None)
     ]
 
@@ -226,10 +226,10 @@ class BTLE_CONNECT_REQ(Packet):
         XIntField("AA", 0x00),
         X3BytesField("crc_init", 0x0),
         XByteField("win_size", 0x0),
-        XLEShortField("win_offset", 0x0),
-        XLEShortField("interval", 0x0),
-        XLEShortField("latency", 0x0),
-        XLEShortField("timeout", 0x0),
+        LEShortField("win_offset", 0x0),
+        LEShortField("interval", 0x0),
+        LEShortField("latency", 0x0),
+        LEShortField("timeout", 0x0),
         BTLEChanMapField("chM", 0),
         BitField("SCA", 0, 3),
         BitField("hop", 0, 5),
