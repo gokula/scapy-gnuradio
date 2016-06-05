@@ -14,6 +14,39 @@ import struct
 
 _COMMAND_CLASS = {
     0x00: "NO_OPERATION",
+
+    0x01: "NODE_INFO",
+    0x02: "REQUEST_NODE_INFO",
+    0x03: "ASSIGN_IDS",
+    0x04: "FIND_NODES_IN_RANGE",
+    0x05: "GET_NODES_IN_RANGE",
+    0x06: "RANGE_INFO",
+    0x07: "CMD_COMPLETE",
+    0x08: "TRANSFER_PRESENTATION",
+    0x09: "TRANSFER_NODE_INFO",
+    0x0a: "TRANSFER_RANGE_INFO",
+    0x0b: "TRANSFER_END",
+    0x0c: "ASSIGN_RETURN_ROUTE",
+    0x0d: "NEW_NODE_REGISTERED",
+    0x0e: "NEW_RANGE_REGISTERED",
+    0x0f: "TRANSFER_NEW_PRIMARY_COMPLETE",
+    0x10: "AUTOMATIC_CONTROLLER_UPDATE_START",
+    0x11: "SUC_NODE_ID",
+    0x12: "SET_SUC",
+    0x13: "SET_SUC_ACK",
+    0x14: "ASSIGN_SUC_RETURN_ROUTE",
+    0x15: "STATIC_ROUTE_REQUEST",
+    0x16: "LOST",
+    0x17: "ACCEPT_LOST",
+    0x18: "NOP_POWER",
+    0x19: "RESERVE_NODE_IDS",
+    0x1a: "RESERVE_IDS",
+    0x1b: "UNKNOWN_1b",
+    0x1c: "UNKNOWN_1c",
+    0x1d: "UNKNOWN_1d",
+    0x1e: "UNKNOWN_1e",
+    0x1f: "UNKNOWN_1f",
+
     0x20: "BASIC",
     0x21: "CONTROLLER_REPLICATION",
     0x22: "APPLICATION_STATUS",
@@ -70,7 +103,7 @@ _COMMAND_CLASS = {
     0x81: "CLOCK",
     0x82: "HAIL",
     0x84: "WAKE_UP",
-    0x85: "ASSOCIATION ",
+    0x85: "ASSOCIATION",
     0x86: "VERSION",
     0x87: "INDICATOR",
     0x88: "PROPRIETARY",
@@ -157,6 +190,22 @@ class ZWaveBasic(Packet):
     fields_desc = [
         ByteEnumField("cmd", 0, {1: "SET", 2: "GET", 3: "REPORT"}),
     ]
+
+class ZWaveBasicSet(Packet):
+    name = "ZWaveBasicSet"
+    fields_desc = [
+        ByteField("value", 0)
+    ]
+
+class ZWaveBasicReport(Packet):
+    name = "ZWaveBasicReport"
+    fields_desc = [
+        ByteField("value", 0)
+    ]
+
+bind_layers(ZWaveReq, ZWaveBasic, cmd_class=0x20)
+bind_layers(ZWaveBasic, ZWaveBasicSet, cmd=0x1)
+bind_layers(ZWaveBasic, ZWaveBasicReport, cmd=0x3)
     
 class ZWaveControllerReplication(Packet):
     name = "ZWaveControllerReplication"
@@ -173,7 +222,19 @@ class ZWaveApplicationStatus(Packet):
 class ZWaveSwitchBin(Packet):
     name = "ZWaveSwitchBin"
     fields_desc = [
-        ByteEnumField("cmd", 0, {1: "SET", 2: "GET", 3: "REPORT"}),  
+        ByteEnumField("cmd", 0, {1: "SET", 2: "GET", 3: "REPORT"})  
+    ]
+
+class ZWaveSwitchBinSet(Packet):
+    name = "ZWaveSwitchBinSet"
+    fields_desc = [
+        ByteEnumField("value", 0, {0: "OFF", 0xFF: "ON"})  
+    ]
+
+class ZWaveSwitchBinReport(Packet):
+    name = "ZWaveSwitchBinReport"
+    fields_desc = [
+        ByteEnumField("value", 0, {0: "OFF", 0xFF: "ON"})  
     ]
 
 class ZWaveSwitchMulti(Packet):
@@ -199,6 +260,16 @@ class ZWaveSceneActivation(Packet):
     fields_desc = [
         ByteEnumField("cmd", 0, {1: "SET"}),
     ]
+
+class ZWaveSceneActivationSet(Packet):
+    name = "ZWaveSceneActivationSet"
+    fields_desc = [
+        ByteField("scene_id", 0),
+        ByteField("dimming_duration", 0),
+    ]
+
+bind_layers(ZWaveReq, ZWaveSceneActivation, cmd_class=0x2B)
+bind_layers( ZWaveSceneActivation,  ZWaveSceneActivationSet, cmd=0x1)
        
 class ZWaveSwitchToggleMulti(Packet):
     name = "ZWaveSwitchToggleMulti"
@@ -298,18 +369,111 @@ class ZWaveAssociation(Packet):
     fields_desc = [
         ByteEnumField("cmd", 0x1, {0x1: "SET", 0x2: "GET", 0x3: "REPORT", 0x4: "REMOVE", 0x5: "GROUPINGSGET", 0x6: "GROUPINGSREPORT"}),
     ]    
+
+class ZWaveAssociationGet(Packet):
+    name = "ZWaveAssociationGet"
+    fields_desc = [
+        ByteField("group_id", 0x0),
+    ]    
+class ZWaveAssociationGroupingsReport(Packet):
+    name = "ZWaveAssociationGroupingsReport"
+    fields_desc = [
+        ByteField("supported_groupings", 0x0)
+    ]    
+
+class ZWaveAssociationRemove(Packet):
+    name = "ZWaveAssociationRemove"
+    fields_desc = [
+        ByteField("group_id", 0x0)
+        #ByteField("node_id", 0x0)
+    ]    
+
+class ZWaveAssociationReport(Packet):
+    name = "ZWaveAssociationReport"
+    fields_desc = [
+        ByteField("group_id", 0x0),
+        ByteField("max_nodes", 0x0),
+        FieldLenField("reports_to_follow", None, count_of="nodeids", fmt='B'),
+        #FieldListField('nodeids', [], ByteField('nodeid', 0), count_from=lambda pkt:pkt.reports_to_follow) 
+        FieldListField('nodeids', [], ByteField('nodeid', 0)) 
+    ]    
+
+class ZWaveAssociationSet(Packet):
+    name = "ZWaveAssociationSet"
+    fields_desc = [
+        ByteField("group_id", 0x0),
+        FieldListField('nodeids', [], ByteField('nodeid', 0)) 
+    ]    
+
+bind_layers(ZWaveReq, ZWaveAssociation, cmd_class=0x85)
+bind_layers(ZWaveAssociation, ZWaveAssociationGet, cmd=2)
+bind_layers(ZWaveAssociation, ZWaveAssociationGroupingsReport, cmd=6)
+bind_layers(ZWaveAssociation, ZWaveAssociationRemove, cmd=5)
+bind_layers(ZWaveAssociation, ZWaveAssociationReport, cmd=3)
+bind_layers(ZWaveAssociation, ZWaveAssociationSet, cmd=1)
     
 class ZWaveVersion(Packet):
     name = "ZWaveVersion"
     fields_desc = [
         ByteEnumField("cmd", 0x11, {0x11: "GET", 0x12: "REPORT", 0x13: "CCGET", 0x14: "CCREPORT"}),
     ] 
+
+class ZWaveVersionCCGet(Packet):
+    name = "ZWaveVersionCCGet"
+    fields_desc = [
+        ByteField("cmd_class", 0x0)
+    ] 
+
+class ZWaveVersionCCReport(Packet):
+    name = "ZWaveVersionCCReport"
+    fields_desc = [
+        ByteField("cmd_class", 0x0),
+        ByteField("version", 0x0)
+    ] 
+
+class ZWaveVersionReport(Packet):
+    name = "ZWaveVersionReport"
+    fields_desc = [
+        ByteEnumField("library_type", 0x1, {
+            0x1: "STATIC_CONTROLLER", 
+            0x2: "CONTROLLER", 
+            0x3: "SLAVE_ENHANCED", 
+            0x4: "SLAVE",
+            0x5: "INSTALLER",
+            0x6: "NO_INTELLIGENT_LIFE"
+            }),
+        ByteField("protocol_version", 0x0),
+        ByteField("protocol_sub_version", 0x0),
+        ByteField("app_version", 0x0),
+        ByteField("app_sub_version", 0x0)
+    ] 
+
+bind_layers(ZWaveReq, ZWaveVersion, cmd_class=0x86)
+bind_layers(ZWaveVersion, ZWaveVersionCCGet, cmd=0x13)
+bind_layers(ZWaveVersion, ZWaveVersionCCReport, cmd=0x14)
+bind_layers(ZWaveVersion, ZWaveVersionReport, cmd=0x12)
     
 class ZWaveIndicator(Packet):
     name = "ZWaveIndicator"
     fields_desc = [
         ByteEnumField("cmd", 1, {0x01: "SET", 0x02: "GET", 0x03: "REPORT"}),
     ] 
+
+class ZWaveIndicatorSet(Packet):
+    name = "ZWaveIndicatorSet"
+    fields_desc = [
+        ByteEnumField("value", 1, {0x0: "OFF", 0xFF: "ON"}),
+    ] 
+
+class ZWaveIndicatorReport(Packet):
+    name = "ZWaveIndicatorReport"
+    fields_desc = [
+        ByteEnumField("value", 1, {0x0: "OFF", 0xFF: "ON"}),
+    ] 
+
+bind_layers(ZWaveReq, ZWaveIndicator, cmd_class=0x87)
+bind_layers(ZWaveIndicator,ZWaveIndicatorSet, cmd=1)
+bind_layers(ZWaveIndicator,ZWaveIndicatorReport, cmd=3)
     
 class ZWaveProprietary(Packet):
     name = "ZWaveProprietary"
@@ -330,22 +494,96 @@ class ZWaveSecurity(Packet):
                                  0x6: "KEYSET", 0x7: "KEYVERIFY", 0x8: "SCHEMEINHERIT", 
                                  0x40: "NONCEGET", 0x80: "NONCEREPORT", 0x81: "MSGENCAP", 0xc1: "MSGENCAPNONCEGET" }),
     ]
+
+class ZWaveSceneActuatorConf(Packet):
+    name = "ZWaveSceneActuatorConf"
+    fields_desc = [
+            ByteEnumField("cmd", 0, {1:"SET",
+                2: "GET", 3: "REPORT"}),
+    ]
+
+class ZWaveSceneActuatorConfSet(Packet):
+    name = "ZWaveSceneActuatorConfSet"
+    fields_desc = [
+            ByteField("scene_id", 0),
+            ByteField("dimming_duration", 0),
+            BitField("override", 0, 1),
+            BitField("reserved", 0, 7),
+            ByteField("level", 0)
+    ]
+
+class ZWaveSceneActuatorConfGet(Packet):
+    name = "ZWaveSceneActuatorConfGet"
+    fields_desc = [
+            ByteField("scene_id", 0)
+    ]
+
+class ZWaveSceneActuatorConfReport(Packet):
+    name = "ZWaveSceneActuatorConfReport"
+    fields_desc = [
+            ByteField("scene_id", 0),
+            ByteField("level", 0),
+            ByteField("dimming_duration", 0)
+    ]
+
+class ZWaveSceneControllerConf(Packet):
+    name = "ZWaveSceneControllerConf"
+    fields_desc = [
+            ByteEnumField("cmd", 0, {1:"SET",
+                2: "GET", 3: "REPORT"}),
+    ]
+
+class ZWaveSceneControllerConfSet(Packet):
+    name = "ZWaveSceneControllerConfSet"
+    fields_desc = [
+            ByteField("group_id", 0),
+            ByteField("scene_id", 0),
+            ByteField("dimming_duration", 0)
+    ]
+
+class ZWaveSceneControllerConfReport(Packet):
+    name = "ZWaveSceneControllerConfSet"
+    fields_desc = [
+            ByteField("group_id", 0),
+            ByteField("scene_id", 0),
+            ByteField("dimming_duration", 0)
+    ]
+
+class ZWaveSceneControllerConfGet(Packet):
+    name = "ZWaveSceneControllerConfGet"
+    fields_desc = [
+            ByteField("group_id", 0)
+    ]
     
 def ZWave(_pkt=None, *args, **kargs):
     return ZWaveReq(_pkt, *args, **kargs)
 
 
+
 bind_layers(ZWaveReq, ZWaveNOP, cmd_class=0x0)
 bind_layers(ZWaveReq, ZWaveNodeInfo, cmd_class=0x1)
-bind_layers(ZWaveReq, ZWaveBasic, cmd_class=0x20)
 bind_layers(ZWaveReq, ZWaveControllerReplication, cmd_class=0x21)
 bind_layers(ZWaveReq, ZWaveApplicationStatus, cmd_class=0x22)
+
 bind_layers(ZWaveReq, ZWaveSwitchBin, cmd_class=0x25)
+bind_layers(ZWaveSwitchBin, ZWaveSwitchBinSet, cmd=1)
+bind_layers(ZWaveSwitchBin, ZWaveSwitchBinReport, cmd=3)
+
 bind_layers(ZWaveReq, ZWaveSwitchMulti, cmd_class=0x26)
 bind_layers(ZWaveReq, ZWaveSwitchAll, cmd_class=0x27)
 bind_layers(ZWaveReq, ZWaveSwitchToggleBin, cmd_class=0x28)
-bind_layers(ZWaveReq, ZWaveSceneActivation, cmd_class=0x2a)
-bind_layers(ZWaveReq, ZWaveSwitchToggleMulti, cmd_class=0x2b)
+bind_layers(ZWaveReq, ZWaveSwitchToggleMulti, cmd_class=0x29)
+
+bind_layers(ZWaveReq, ZWaveSceneControllerConf, cmd_class=0x2d)
+bind_layers(ZWaveSceneControllerConf, ZWaveSceneControllerConfSet, cmd=1)
+bind_layers(ZWaveSceneControllerConf, ZWaveSceneControllerConfGet, cmd=2)
+bind_layers(ZWaveSceneControllerConf, ZWaveSceneControllerConfReport, cmd=3)
+
+bind_layers(ZWaveReq, ZWaveSceneActuatorConf, cmd_class=0x2c)
+bind_layers(ZWaveSceneActuatorConf, ZWaveSceneActuatorConfSet, cmd=1)
+bind_layers(ZWaveSceneActuatorConf, ZWaveSceneActuatorConfGet, cmd=2)
+bind_layers(ZWaveSceneActuatorConf, ZWaveSceneActuatorConfReport, cmd=3)
+
 bind_layers(ZWaveReq, ZWaveSensBin, cmd_class=0x30)
 bind_layers(ZWaveReq, ZWaveSensMulti, cmd_class=0x31)
 bind_layers(ZWaveReq, ZWaveMeter, cmd_class=0x32)
@@ -360,9 +598,7 @@ bind_layers(ZWaveReq, ZWavePowerlevel, cmd_class=0x73)
 bind_layers(ZWaveReq, ZWaveProtection, cmd_class=0x75)
 bind_layers(ZWaveReq, ZWaveBattery, cmd_class=0x80)
 bind_layers(ZWaveReq, ZWaveWakeup, cmd_class=0x84)
-bind_layers(ZWaveReq, ZWaveAssociation, cmd_class=0x85)
-bind_layers(ZWaveReq, ZWaveVersion, cmd_class=0x86)
-bind_layers(ZWaveReq, ZWaveIndicator, cmd_class=0x87)
+
 bind_layers(ZWaveReq, ZWaveProprietary, cmd_class=0x88)
 bind_layers(ZWaveReq, ZWaveManufacturerProprietary, cmd_class=0x91)
 bind_layers(ZWaveReq, ZWaveSecurity, cmd_class=0x98)
